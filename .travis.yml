@@ -1,5 +1,8 @@
 language: python
-cache: pip
+cache:
+  pip: true
+  directories:
+    - .ci-replay-cache
 matrix:
   include:
     - python: 3.5
@@ -17,6 +20,10 @@ install:
 before_script:
   - "flake8 pyresparser"
 script:
-  - "coverage run -m pytest"
+  - >-
+    CI_REPLAY_LANE="py${TRAVIS_PYTHON_VERSION}"
+    CI_REPLAY_CACHE_DIR="$PWD/.ci-replay-cache"
+    timeout --signal=TERM --kill-after=30s 45m
+    coverage run -m pytest -p ci_replay --maxfail=1
 after_success:
   - codecov
